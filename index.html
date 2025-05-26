@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App - Aplikasi Pencatatan</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <app-header app-name="Notes App" description="Aplikasi pencatatan sederhana dan elegan"></app-header>
+        <note-form form-title="Tambah Catatan Baru"></note-form>
+        
+        <section class="notes-section">
+            <h2>📝 Catatan Aktif</h2>
+            <div class="notes-grid" id="notesGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Memuat catatan...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="archive-section">
+            <button class="archive-toggle" onclick="toggleArchive()">
+                📦 Lihat Catatan Arsip
+            </button>
+            <div class="archived-notes" id="archivedNotes">
+                <h2 class="archive-title">📦 Catatan Arsip</h2>
+                <div class="notes-grid" id="archiveGrid"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data/notes-data.js"></script>
+    <script src="js/components/app-header.js"></script>
+    <script src="js/components/note-form.js"></script>
+    <script src="js/components/note-item.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
