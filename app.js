@@ -1,4 +1,6 @@
-// Notes App Logic
+// File: app.js (diletakkan di root folder, bukan di js/)
+// Notes App Logic dengan akses data melalui window object
+
 class NotesApp {
     constructor() {
         this.notesGrid = null;
@@ -15,6 +17,14 @@ class NotesApp {
             return;
         }
 
+        // Cek apakah data sudah tersedia
+        if (!window.notesData) {
+            console.error('Notes data not loaded!');
+            return;
+        }
+
+        console.log('✅ App initialized with', window.notesData.length, 'notes');
+        
         // Render notes tanpa delay
         this.renderAllNotes();
     }
@@ -29,9 +39,11 @@ class NotesApp {
     }
 
     renderActiveNotes() {
-        if (!this.notesGrid) return;
+        if (!this.notesGrid || !window.notesData) return;
         
-        const activeNotes = notesData.filter(note => !note.archived);
+        var activeNotes = window.notesData.filter(function(note) {
+            return !note.archived;
+        });
         
         if (activeNotes.length === 0) {
             this.notesGrid.innerHTML = `
@@ -43,17 +55,21 @@ class NotesApp {
             return;
         }
 
-        this.notesGrid.innerHTML = activeNotes.map(note => {
-            // Escape JSON untuk menghindari error
-            const noteDataJson = JSON.stringify(note).replace(/'/g, '&apos;');
-            return `<note-item note-data='${noteDataJson}'></note-item>`;
-        }).join('');
+        var notesHTML = '';
+        for (var i = 0; i < activeNotes.length; i++) {
+            var note = activeNotes[i];
+            var noteDataJson = JSON.stringify(note).replace(/'/g, '&apos;');
+            notesHTML += '<note-item note-data=\'' + noteDataJson + '\'></note-item>';
+        }
+        this.notesGrid.innerHTML = notesHTML;
     }
 
     renderArchivedNotes() {
-        if (!this.archiveGrid) return;
+        if (!this.archiveGrid || !window.notesData) return;
         
-        const archivedNotes = notesData.filter(note => note.archived);
+        var archivedNotes = window.notesData.filter(function(note) {
+            return note.archived;
+        });
         
         if (archivedNotes.length === 0) {
             this.archiveGrid.innerHTML = `
@@ -65,22 +81,33 @@ class NotesApp {
             return;
         }
 
-        this.archiveGrid.innerHTML = archivedNotes.map(note => {
-            const noteDataJson = JSON.stringify(note).replace(/'/g, '&apos;');
-            return `<note-item note-data='${noteDataJson}'></note-item>`;
-        }).join('');
+        var notesHTML = '';
+        for (var i = 0; i < archivedNotes.length; i++) {
+            var note = archivedNotes[i];
+            var noteDataJson = JSON.stringify(note).replace(/'/g, '&apos;');
+            notesHTML += '<note-item note-data=\'' + noteDataJson + '\'></note-item>';
+        }
+        this.archiveGrid.innerHTML = notesHTML;
     }
 }
 
 // Global Functions
 function archiveNote(noteId) {
     try {
-        const noteIndex = notesData.findIndex(note => note.id === noteId);
-        if (noteIndex !== -1) {
-            notesData[noteIndex].archived = true;
-            if (window.notesApp) {
-                window.notesApp.renderAllNotes();
+        if (!window.notesData) {
+            console.error('Notes data not available');
+            return;
+        }
+        
+        for (var i = 0; i < window.notesData.length; i++) {
+            if (window.notesData[i].id === noteId) {
+                window.notesData[i].archived = true;
+                break;
             }
+        }
+        
+        if (window.notesApp) {
+            window.notesApp.renderAllNotes();
         }
     } catch (error) {
         console.error('Error archiving note:', error);
@@ -89,12 +116,20 @@ function archiveNote(noteId) {
 
 function unarchiveNote(noteId) {
     try {
-        const noteIndex = notesData.findIndex(note => note.id === noteId);
-        if (noteIndex !== -1) {
-            notesData[noteIndex].archived = false;
-            if (window.notesApp) {
-                window.notesApp.renderAllNotes();
+        if (!window.notesData) {
+            console.error('Notes data not available');
+            return;
+        }
+        
+        for (var i = 0; i < window.notesData.length; i++) {
+            if (window.notesData[i].id === noteId) {
+                window.notesData[i].archived = false;
+                break;
             }
+        }
+        
+        if (window.notesApp) {
+            window.notesApp.renderAllNotes();
         }
     } catch (error) {
         console.error('Error unarchiving note:', error);
@@ -104,12 +139,20 @@ function unarchiveNote(noteId) {
 function deleteNote(noteId) {
     try {
         if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
-            const noteIndex = notesData.findIndex(note => note.id === noteId);
-            if (noteIndex !== -1) {
-                notesData.splice(noteIndex, 1);
-                if (window.notesApp) {
-                    window.notesApp.renderAllNotes();
+            if (!window.notesData) {
+                console.error('Notes data not available');
+                return;
+            }
+            
+            for (var i = 0; i < window.notesData.length; i++) {
+                if (window.notesData[i].id === noteId) {
+                    window.notesData.splice(i, 1);
+                    break;
                 }
+            }
+            
+            if (window.notesApp) {
+                window.notesApp.renderAllNotes();
             }
         }
     } catch (error) {
@@ -119,8 +162,8 @@ function deleteNote(noteId) {
 
 function toggleArchive() {
     try {
-        const archivedSection = document.getElementById('archivedNotes');
-        const button = document.querySelector('.archive-toggle');
+        var archivedSection = document.getElementById('archivedNotes');
+        var button = document.querySelector('.archive-toggle');
         
         if (!archivedSection || !button) return;
         
@@ -136,17 +179,47 @@ function toggleArchive() {
     }
 }
 
+// Function to add new note
+function addNewNote(title, body) {
+    try {
+        if (!window.notesData) {
+            window.notesData = [];
+        }
+        
+        var newNote = {
+            id: 'notes-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            title: title,
+            body: body,
+            createdAt: new Date().toISOString(),
+            archived: false
+        };
+
+        window.notesData.unshift(newNote);
+        
+        if (window.notesApp) {
+            window.notesApp.renderAllNotes();
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error adding note:', error);
+        return false;
+    }
+}
+
 // Initialize App
-let notesApp;
+var notesApp;
 
 // Wait for DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Tunggu semua Web Components terdaftar
-    setTimeout(() => {
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM loaded, initializing app...');
+    
+    // Tunggu sebentar untuk memastikan semua script ter-load
+    setTimeout(function() {
         notesApp = new NotesApp();
-        window.notesApp = notesApp; // Make globally accessible
+        window.notesApp = notesApp;
         notesApp.init();
-    }, 100);
+    }, 200);
 });
 
 // Fallback jika DOMContentLoaded sudah fired
@@ -154,11 +227,12 @@ if (document.readyState === 'loading') {
     // DOM belum siap, tunggu event
 } else {
     // DOM sudah siap
-    setTimeout(() => {
+    setTimeout(function() {
         if (!notesApp) {
+            console.log('🔄 Fallback initialization...');
             notesApp = new NotesApp();
             window.notesApp = notesApp;
             notesApp.init();
         }
-    }, 100);
+    }, 200);
 }

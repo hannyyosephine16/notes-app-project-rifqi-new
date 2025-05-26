@@ -1,4 +1,5 @@
-// Data catatan dari requirement
+// File: js/data/notes-data.js
+// Menggunakan var untuk membuat global variable
 const notesData = [
     {
         id: 'notes-jT-jjsyz61J8XKiI',
@@ -106,3 +107,6 @@ const notesData = [
         archived: false,
     },
 ];
+
+// Debug: pastikan data tersedia
+console.log('Notes data loaded:', notesData.length, 'items');

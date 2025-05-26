@@ -1,11 +1,13 @@
-// Web Component 2: Note Form
+// File: js/components/note-form.js
+// Web Component 2: Note Form - Fixed Version
+
 class NoteForm extends HTMLElement {
     constructor() {
         super();
     }
 
     connectedCallback() {
-        const formTitle = this.getAttribute('form-title') || 'Tambah Catatan Baru';
+        var formTitle = this.getAttribute('form-title') || 'Tambah Catatan Baru';
         
         this.innerHTML = `
             <div class="form-container">
@@ -30,35 +32,47 @@ class NoteForm extends HTMLElement {
     }
 
     setupFormValidation() {
-        const form = this.querySelector('#noteForm');
-        const titleInput = this.querySelector('#noteTitle');
-        const bodyInput = this.querySelector('#noteBody');
+        var form = this.querySelector('#noteForm');
+        var titleInput = this.querySelector('#noteTitle');
+        var bodyInput = this.querySelector('#noteBody');
+        var self = this;
 
         if (!form || !titleInput || !bodyInput) return;
 
         // Real-time validation
-        titleInput.addEventListener('input', () => this.validateField(titleInput, 3));
-        bodyInput.addEventListener('input', () => this.validateField(bodyInput, 10));
-        titleInput.addEventListener('blur', () => this.validateField(titleInput, 3));
-        bodyInput.addEventListener('blur', () => this.validateField(bodyInput, 10));
+        titleInput.addEventListener('input', function() {
+            self.validateField(titleInput, 3);
+        });
+        
+        bodyInput.addEventListener('input', function() {
+            self.validateField(bodyInput, 10);
+        });
+        
+        titleInput.addEventListener('blur', function() {
+            self.validateField(titleInput, 3);
+        });
+        
+        bodyInput.addEventListener('blur', function() {
+            self.validateField(bodyInput, 10);
+        });
 
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const isTitleValid = this.validateField(titleInput, 3);
-            const isBodyValid = this.validateField(bodyInput, 10);
+            var isTitleValid = self.validateField(titleInput, 3);
+            var isBodyValid = self.validateField(bodyInput, 10);
             
             if (isTitleValid && isBodyValid) {
-                this.addNote(titleInput.value.trim(), bodyInput.value.trim());
+                self.addNote(titleInput.value.trim(), bodyInput.value.trim());
                 form.reset();
-                this.clearValidationErrors();
+                self.clearValidationErrors();
             }
         });
     }
 
     validateField(input, minLength) {
-        const formGroup = input.closest('.form-group');
-        const value = input.value.trim();
+        var formGroup = input.closest('.form-group');
+        var value = input.value.trim();
         
         if (value.length === 0 || value.length < minLength) {
             formGroup.classList.add('error');
@@ -70,38 +84,30 @@ class NoteForm extends HTMLElement {
     }
 
     clearValidationErrors() {
-        const formGroups = this.querySelectorAll('.form-group');
-        formGroups.forEach(group => group.classList.remove('error'));
+        var formGroups = this.querySelectorAll('.form-group');
+        for (var i = 0; i < formGroups.length; i++) {
+            formGroups[i].classList.remove('error');
+        }
     }
 
     addNote(title, body) {
         try {
-            const newNote = {
-                id: `notes-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                title: title,
-                body: body,
-                createdAt: new Date().toISOString(),
-                archived: false
-            };
-
-            notesData.unshift(newNote);
+            // Gunakan function global untuk menambah note
+            var success = addNewNote(title, body);
             
-            // Render ulang jika notesApp sudah ada
-            if (window.notesApp) {
-                window.notesApp.renderAllNotes();
-            }
-            
-            // Success feedback
-            const button = this.querySelector('.btn-submit');
-            if (button) {
-                const originalText = button.textContent;
-                button.textContent = 'Catatan Berhasil Ditambahkan! ✓';
-                button.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
-                
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                }, 2000);
+            if (success) {
+                // Success feedback
+                var button = this.querySelector('.btn-submit');
+                if (button) {
+                    var originalText = button.textContent;
+                    button.textContent = 'Catatan Berhasil Ditambahkan! ✓';
+                    button.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+                    
+                    setTimeout(function() {
+                        button.textContent = originalText;
+                        button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }, 2000);
+                }
             }
         } catch (error) {
             console.error('Error adding note:', error);
