@@ -1,239 +1,38 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes App - Aplikasi Pencatatan</title>
-    <link rel="stylesheet" href="./styles/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes App - Aplikasi Pencatatan</title>
+  <!-- CSS akan diimpor melalui webpack -->
 </head>
 <body>
-    <div class="container">
-        <app-header app-name="Notes App" description="Aplikasi pencatatan sederhana dan elegan"></app-header>
-        <note-form form-title="Tambah Catatan Baru"></note-form>
-        
-        <section class="notes-section">
-            <h2>📝 Catatan Aktif</h2>
-            <div class="notes-grid" id="notesGrid">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Memuat catatan...</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="archive-section">
-            <button class="archive-toggle" onclick="toggleArchive()">
-                📦 Lihat Catatan Arsip
-            </button>
-            <div class="archived-notes" id="archivedNotes">
-                <h2 class="archive-title">📦 Catatan Arsip</h2>
-                <div class="notes-grid" id="archiveGrid"></div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Scripts dengan Debugging -->
-    <script>
-        // Periksa jika script dijalankan
-        console.log('Main script loaded');
-    </script>
+  <loading-indicator></loading-indicator>
+  
+  <div class="container">
+    <app-header app-name="Notes App" description="Aplikasi pencatatan sederhana dan elegan"></app-header>
+    <note-form form-title="Tambah Catatan Baru"></note-form>
     
-    <!-- Pastikan path data benar -->
-    <script src="js/data/notes-data.js"></script>
-    <script>
-        // Verifikasi data
-        console.log('Data loaded?', typeof notesData !== 'undefined');
-        console.log('Notes count:', notesData ? notesData.length : 'Data not loaded');
-    </script>
-    
-    <script src="js/components/app-header.js"></script>
-    <script src="js/components/note-form.js"></script>
-    <script src="js/components/note-item.js"></script>
-    
-    <script>
-        // Notes App Logic
-        class NotesApp {
-            constructor() {
-                this.notesGrid = null;
-                this.archiveGrid = null;
-            }
+    <section class="notes-section">
+      <h2>📝 Catatan Aktif</h2>
+      <div class="notes-grid" id="notesGrid">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Memuat catatan...</p>
+        </div>
+      </div>
+    </section>
 
-            init() {
-                // Pastikan DOM sudah siap
-                this.notesGrid = document.getElementById('notesGrid');
-                this.archiveGrid = document.getElementById('archiveGrid');
-                
-                if (!this.notesGrid || !this.archiveGrid) {
-                    console.error('Grid elements not found!');
-                    return;
-                }
-
-                // Periksa apakah data tersedia
-                if (typeof notesData === 'undefined' || !Array.isArray(notesData)) {
-                    console.error('Notes data is not defined or not an array!');
-                    this.displayError();
-                    return;
-                }
-
-                console.log('Initializing app with', notesData.length, 'notes');
-                
-                // Render notes tanpa delay
-                this.renderAllNotes();
-            }
-
-            displayError() {
-                if (this.notesGrid) {
-                    this.notesGrid.innerHTML = `
-                        <div class="empty-state" style="background-color: rgba(231, 76, 60, 0.2);">
-                            <h3>⚠️ Error: Data tidak dapat dimuat</h3>
-                            <p>Terjadi kesalahan saat memuat data catatan. Pastikan file js/data/notes-data.js tersedia.</p>
-                        </div>
-                    `;
-                }
-            }
-
-            renderAllNotes() {
-                try {
-                    this.renderActiveNotes();
-                    this.renderArchivedNotes();
-                } catch (error) {
-                    console.error('Error rendering notes:', error);
-                    this.displayError();
-                }
-            }
-
-            renderActiveNotes() {
-                if (!this.notesGrid) return;
-                
-                const activeNotes = notesData.filter(note => !note.archived);
-                console.log('Active notes:', activeNotes.length);
-                
-                if (activeNotes.length === 0) {
-                    this.notesGrid.innerHTML = `
-                        <div class="empty-state">
-                            <h3>📝 Belum ada catatan aktif</h3>
-                            <p>Tambahkan catatan pertama Anda menggunakan formulir di atas!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                this.notesGrid.innerHTML = activeNotes.map(note => {
-                    // Escape JSON untuk menghindari error
-                    const noteDataJson = JSON.stringify(note).replace(/'/g, '&apos;');
-                    return `<note-item note-data='${noteDataJson}'></note-item>`;
-                }).join('');
-            }
-
-            renderArchivedNotes() {
-                if (!this.archiveGrid) return;
-                
-                const archivedNotes = notesData.filter(note => note.archived);
-                console.log('Archived notes:', archivedNotes.length);
-                
-                if (archivedNotes.length === 0) {
-                    this.archiveGrid.innerHTML = `
-                        <div class="empty-state">
-                            <h3>📦 Belum ada catatan diarsipkan</h3>
-                            <p>Catatan yang diarsipkan akan muncul di sini</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                this.archiveGrid.innerHTML = archivedNotes.map(note => {
-                    const noteDataJson = JSON.stringify(note).replace(/'/g, '&apos;');
-                    return `<note-item note-data='${noteDataJson}'></note-item>`;
-                }).join('');
-            }
-        }
-
-        // Global Functions
-        function archiveNote(noteId) {
-            try {
-                const noteIndex = notesData.findIndex(note => note.id === noteId);
-                if (noteIndex !== -1) {
-                    notesData[noteIndex].archived = true;
-                    if (window.notesApp) {
-                        window.notesApp.renderAllNotes();
-                    }
-                }
-            } catch (error) {
-                console.error('Error archiving note:', error);
-            }
-        }
-
-        function unarchiveNote(noteId) {
-            try {
-                const noteIndex = notesData.findIndex(note => note.id === noteId);
-                if (noteIndex !== -1) {
-                    notesData[noteIndex].archived = false;
-                    if (window.notesApp) {
-                        window.notesApp.renderAllNotes();
-                    }
-                }
-            } catch (error) {
-                console.error('Error unarchiving note:', error);
-            }
-        }
-
-        function deleteNote(noteId) {
-            try {
-                if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
-                    const noteIndex = notesData.findIndex(note => note.id === noteId);
-                    if (noteIndex !== -1) {
-                        notesData.splice(noteIndex, 1);
-                        if (window.notesApp) {
-                            window.notesApp.renderAllNotes();
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error deleting note:', error);
-            }
-        }
-
-        function toggleArchive() {
-            try {
-                const archivedSection = document.getElementById('archivedNotes');
-                const button = document.querySelector('.archive-toggle');
-                
-                if (!archivedSection || !button) return;
-                
-                if (archivedSection.classList.contains('show')) {
-                    archivedSection.classList.remove('show');
-                    button.innerHTML = '📦 Lihat Catatan Arsip';
-                } else {
-                    archivedSection.classList.add('show');
-                    button.innerHTML = '🔼 Sembunyikan Catatan Arsip';
-                }
-            } catch (error) {
-                console.error('Error toggling archive:', error);
-            }
-        }
-
-        // Initialize App
-        let notesApp;
-
-        // Direct initialization when DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM fully loaded');
-            notesApp = new NotesApp();
-            window.notesApp = notesApp; // Make globally accessible
-            notesApp.init();
-        });
-
-        // Fallback initialization
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            console.log('DOM already loaded, initializing directly');
-            setTimeout(() => {
-                if (!notesApp) {
-                    notesApp = new NotesApp();
-                    window.notesApp = notesApp;
-                    notesApp.init();
-                }
-            }, 100);
-        }
-    </script>
+    <section class="archive-section">
+      <button class="archive-toggle">
+        📦 Lihat Catatan Arsip
+      </button>
+      <div class="archived-notes" id="archivedNotes">
+        <h2 class="archive-title">📦 Catatan Arsip</h2>
+        <div class="notes-grid" id="archiveGrid"></div>
+      </div>
+    </section>
+  </div>
+  <!-- Semua JavaScript akan diimpor oleh webpack -->
 </body>
 </html>

@@ -275,43 +275,48 @@ class NotesApp {
   }
 
   _setupEventListeners() {
-    // Global event listener for note actions
-    document.addEventListener('note:archive', event => this._archiveNote(event.detail.id));
-    document.addEventListener('note:unarchive', event => this._unarchiveNote(event.detail.id));
-    document.addEventListener('note:delete', event => this._deleteNote(event.detail.id));
-    document.addEventListener('note:add', event => this._addNote(event.detail.title, event.detail.body));
-    
-    // Archive section toggle
-    const archiveToggleBtn = document.querySelector('.archive-toggle');
-    if (archiveToggleBtn) {
-      archiveToggleBtn.addEventListener('click', () => this._toggleArchiveSection());
-    }
+  // Global event listener for note actions
+  document.addEventListener('note:archive', event => this._archiveNote(event.detail.id));
+  document.addEventListener('note:unarchive', event => this._unarchiveNote(event.detail.id));
+  document.addEventListener('note:delete', event => this._deleteNote(event.detail.id));
+  document.addEventListener('note:add', event => this._addNote(event.detail.title, event.detail.body));
+  
+  // Archive section toggle
+  const archiveToggleBtn = document.querySelector('.archive-toggle');
+  if (archiveToggleBtn) {
+    archiveToggleBtn.addEventListener('click', () => this._toggleArchiveSection());
   }
+}
 
   async _fetchNotes() {
-    try {
-      this.loadingIndicator.show = true;
-      
-      // Fetch both active and archived notes in parallel
-      const [activeNotes, archivedNotes] = await Promise.all([
-        ApiService.getNotes(),
-        ApiService.getArchivedNotes()
-      ]);
-      
-      this.activeNotes = activeNotes;
-      this.archivedNotes = archivedNotes;
-      
-      this._renderActiveNotes();
-      this._renderArchivedNotes();
-      
-      NotificationService.success('Data berhasil dimuat');
-    } catch (error) {
-      console.error('Error fetching notes:', error);
-      NotificationService.error('Gagal memuat data');
-    } finally {
-      this.loadingIndicator.show = false;
-    }
+  try {
+    this.loadingIndicator.show = true;
+    
+    console.log('Fetching notes from API...');
+    
+    // Fetch both active and archived notes in parallel
+    const [activeNotes, archivedNotes] = await Promise.all([
+      ApiService.getNotes(),
+      ApiService.getArchivedNotes()
+    ]);
+    
+    console.log('Active notes from API:', activeNotes);
+    console.log('Archived notes from API:', archivedNotes);
+    
+    this.activeNotes = activeNotes;
+    this.archivedNotes = archivedNotes;
+    
+    this._renderActiveNotes();
+    this._renderArchivedNotes();
+    
+    NotificationService.success('Data berhasil dimuat');
+  } catch (error) {
+    console.error('Error fetching notes:', error);
+    NotificationService.error('Gagal memuat data: ' + error.message);
+  } finally {
+    this.loadingIndicator.show = false;
   }
+}
 
   _renderActiveNotes() {
     if (!this.notesGrid) return;
