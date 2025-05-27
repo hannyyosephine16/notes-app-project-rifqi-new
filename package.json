@@ -1,0 +1,35 @@
+{
+  "name": "notes-app",
+  "version": "1.0.0",
+  "description": "A simple notes application",
+  "main": "app.js",
+  "scripts": {
+    "start-dev": "webpack serve --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
+    "lint": "eslint ./src",
+    "format": "prettier --write ./src"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^6.11.0",
+    "eslint": "^8.44.0",
+    "html-webpack-plugin": "^5.6.3",
+    "prettier": "^3.5.3",
+    "style-loader": "^3.3.4",
+    "sweetalert2": "^11.22.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.2",
+    "webpack-merge": "^5.10.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hannyyosephine16/notes-app-project-rifqi-new.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/hannyyosephine16/notes-app-project-rifqi-new/issues"
+  },
+  "homepage": "https://github.com/hannyyosephine16/notes-app-project-rifqi-new#readme"
+}
